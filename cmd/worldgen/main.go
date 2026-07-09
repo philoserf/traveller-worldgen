@@ -4,6 +4,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
@@ -16,6 +17,7 @@ import (
 // here plus its runner file (e.g. classic.go).
 var editions = map[string]func(args []string, stdout, stderr io.Writer) int{
 	"classic": runClassic,
+	"mega":    runMega,
 }
 
 func main() {
@@ -54,4 +56,23 @@ func usage(w io.Writer) {
 // is nowhere better to report a failure to write an error message).
 func errf(w io.Writer, format string, a ...any) {
 	_, _ = fmt.Fprintf(w, format, a...)
+}
+
+// renderWorldsJSON marshals one world as an object, or several as an array, with
+// two-space indentation and a trailing newline. Shared by every edition's runner
+// so the JSON shape stays identical across editions.
+func renderWorldsJSON[T any](worlds []T) (string, error) {
+	var (
+		data []byte
+		err  error
+	)
+	if len(worlds) == 1 {
+		data, err = json.MarshalIndent(worlds[0], "", "  ")
+	} else {
+		data, err = json.MarshalIndent(worlds, "", "  ")
+	}
+	if err != nil {
+		return "", fmt.Errorf("encoding json: %w", err)
+	}
+	return string(data) + "\n", nil
 }
