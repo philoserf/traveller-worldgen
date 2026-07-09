@@ -150,6 +150,102 @@ func TestMegaHelp(t *testing.T) {
 	}
 }
 
+func TestTneGoldenFormats(t *testing.T) {
+	cases := []struct {
+		name   string
+		args   []string
+		golden string
+	}{
+		{"text", []string{"tne", "-seed", "42"}, "tne-seed42.text"},
+		{"uwp", []string{"tne", "-seed", "42", "-format", "uwp"}, "tne-seed42.uwp"},
+		{"json", []string{"tne", "-seed", "42", "-format", "json"}, "tne-seed42.json"},
+		{"backwater", []string{"tne", "-seed", "5", "-n", "8", "-nature", "backwater", "-format", "uwp"}, "tne-seed5n8-backwater.uwp"},
+		{"batch", []string{"tne", "-seed", "7", "-n", "3", "-format", "uwp"}, "tne-seed7n3.uwp"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			code, out, errStr := runCapture(t, c.args...)
+			if code != 0 {
+				t.Fatalf("exit %d, stderr: %s", code, errStr)
+			}
+			path := filepath.Join("testdata", c.golden)
+			if *update {
+				if err := os.WriteFile(path, []byte(out), 0o644); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+			want, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read golden (run with -update to create): %v", err)
+			}
+			if out != string(want) {
+				t.Errorf("output mismatch for %s:\n got:\n%s\nwant:\n%s", c.golden, out, want)
+			}
+		})
+	}
+}
+
+func TestTneDeterministic(t *testing.T) {
+	_, a, _ := runCapture(t, "tne", "-seed", "123")
+	_, b, _ := runCapture(t, "tne", "-seed", "123")
+	if a != b {
+		t.Fatalf("same seed produced different output:\n%s\n---\n%s", a, b)
+	}
+}
+
+func TestTneJSONFields(t *testing.T) {
+	code, out, errStr := runCapture(t, "tne", "-seed", "42", "-format", "json")
+	if code != 0 {
+		t.Fatalf("exit %d, stderr: %s", code, errStr)
+	}
+	var obj map[string]any
+	if err := json.Unmarshal([]byte(out), &obj); err != nil {
+		t.Fatalf("invalid JSON: %v\n%s", err, out)
+	}
+	for _, field := range []string{"uwp", "militaryBase", "baseCode"} {
+		if _, ok := obj[field]; !ok {
+			t.Errorf("JSON missing %q field", field)
+		}
+	}
+}
+
+func TestTneErrors(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"unknown flag", []string{"tne", "-nope"}},
+		{"bad format", []string{"tne", "-format", "xml"}},
+		{"bad nature", []string{"tne", "-nature", "bogus"}},
+		{"bad n", []string{"tne", "-n", "0"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			code, _, errStr := runCapture(t, c.args...)
+			if code != 2 {
+				t.Errorf("exit = %d, want 2", code)
+			}
+			if strings.TrimSpace(errStr) == "" {
+				t.Error("expected a message on stderr")
+			}
+		})
+	}
+}
+
+func TestTneHelp(t *testing.T) {
+	code, out, errStr := runCapture(t, "tne", "-h")
+	if code != 0 {
+		t.Errorf("exit = %d, want 0", code)
+	}
+	if !strings.Contains(out, "-nature") {
+		t.Errorf("help should list the -nature flag on stdout, got: %s", out)
+	}
+	if strings.TrimSpace(errStr) != "" {
+		t.Errorf("help should not write to stderr, got: %s", errStr)
+	}
+}
+
 func TestClassicDeterministic(t *testing.T) {
 	_, a, _ := runCapture(t, "classic", "-seed", "123")
 	_, b, _ := runCapture(t, "classic", "-seed", "123")
