@@ -77,16 +77,18 @@ func (w World) PopulationDesc() string { return lookup(popDesc, w.Population) }
 // GovernmentDesc returns the description for the world's government.
 func (w World) GovernmentDesc() string { return lookup(govDesc, w.Government) }
 
-// LawLevelDesc returns the description for the world's law level. Book 3's
-// described scale tops out at 9 ("possession of any weapon outside one's home
-// prohibited"), but its note makes each level cumulative and ties the raw level
-// to an enforcement throw, so a level above 9 keeps the level-9 weapons
-// prohibition while enforcement becomes near-certain.
+// LawLevelDesc returns the description for the world's law level: the weapons
+// prohibition plus the Book 3 enforcement throw (the 2D saving throw needed to
+// avoid arrest when encountering an enforcement agent, equal to the law level).
+// Book 3's prohibition scale tops out at 9, so a higher level keeps level 9's
+// prohibition while the enforcement throw keeps rising. Law level 0 has no laws
+// and therefore no enforcement throw.
 func (w World) LawLevelDesc() string {
-	if w.LawLevel > 9 {
-		return lawDesc[9] + "; enforcement near-certain (beyond Book 3's described law level 9)"
+	prohibition := lookup(lawDesc, min(w.LawLevel, 9))
+	if w.LawLevel == 0 {
+		return prohibition
 	}
-	return lookup(lawDesc, w.LawLevel)
+	return fmt.Sprintf("%s; %d+ to avoid arrest", prohibition, w.LawLevel)
 }
 
 // TechLevelDesc returns a compact summary of the world's tech-level advances.

@@ -38,7 +38,7 @@ Draejapu  X200346-2  None
   Hydrographics 0  No free standing water
   Population    3  1,000
   Government    4  Representative Democracy
-  Law Level     6  Most firearms (all except shotguns) prohibited
+  Law Level     6  Most firearms (all except shotguns) prohibited; 6+ to avoid arrest
   Tech Level    2  Halberd, Broadsword · Cannon · Wind
 
 $ go run ./cmd/worldgen classic -seed 1977 -n 4 -format uwp
@@ -113,6 +113,8 @@ derived from the true (uncapped) government so both digits stay consistent.
 **Describing out-of-range values.** Atmosphere, government, and tech level have
 no Book 3 guidance past their tables, so a value beyond the last row is reported
 as "(beyond described range)". **Law level is the exception**: Book 3's note
-makes each level cumulative and ties the raw level to an enforcement throw, so a
-law level above 9 keeps level 9's weapons prohibition and adds an
-enforcement-is-near-certain qualifier rather than the generic marker.
+makes each level cumulative and ties the raw level to an enforcement throw, so
+the text output always shows the weapons prohibition plus the saving throw to
+avoid arrest (`N+`, equal to the law level). A law level above 9 keeps level
+9's prohibition while the throw keeps rising — becoming impossible to make (and
+thus certain arrest) at 13+.

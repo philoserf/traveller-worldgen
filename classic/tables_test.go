@@ -1,7 +1,6 @@
 package classic_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/philoserf/traveller-worldgen/classic"
@@ -28,7 +27,7 @@ func TestDescriptionsKnownValues(t *testing.T) {
 		{"hydrographics", w.HydrographicsDesc(), "70%"},
 		{"population", w.PopulationDesc(), "100,000,000"},
 		{"government", w.GovernmentDesc(), "Representative Democracy"},
-		{"lawLevel", w.LawLevelDesc(), "Personal concealable firearms prohibited"},
+		{"lawLevel", w.LawLevelDesc(), "Personal concealable firearms prohibited; 5+ to avoid arrest"},
 	}
 	for _, c := range cases {
 		if c.got != c.want {
@@ -57,25 +56,23 @@ func TestDescriptionsBeyondRange(t *testing.T) {
 	}
 }
 
-func TestLawLevelDescExtendsPastNine(t *testing.T) {
+func TestLawLevelDescEnforcementThrow(t *testing.T) {
 	t.Parallel()
 
 	const level9 = "Possession of any weapon outside one's home prohibited"
 
-	if got := (classic.World{LawLevel: 9}).LawLevelDesc(); got != level9 {
-		t.Errorf("law 9 desc = %q, want plain level-9 text", got)
+	cases := []struct {
+		level int
+		want  string
+	}{
+		{0, "No weapons laws"}, // no laws → no enforcement throw
+		{5, "Personal concealable firearms prohibited; 5+ to avoid arrest"},
+		{9, level9 + "; 9+ to avoid arrest"},
+		{15, level9 + "; 15+ to avoid arrest"}, // past 9: keep level-9 prohibition, throw rises
 	}
-
-	// Book 3's cumulative rule + enforcement throw give guidance past 9, so law
-	// level >9 extends level 9 rather than falling back to the generic marker.
-	got := (classic.World{LawLevel: 15}).LawLevelDesc()
-	if !strings.Contains(got, level9) {
-		t.Errorf("law 15 desc should keep level-9 prohibition: %q", got)
-	}
-	if !strings.Contains(got, "enforcement near-certain") {
-		t.Errorf("law 15 desc should note escalating enforcement: %q", got)
-	}
-	if strings.Contains(got, "(beyond described range)") {
-		t.Errorf("law 15 desc should not use the generic marker: %q", got)
+	for _, c := range cases {
+		if got := (classic.World{LawLevel: c.level}).LawLevelDesc(); got != c.want {
+			t.Errorf("law %d desc = %q, want %q", c.level, got, c.want)
+		}
 	}
 }
