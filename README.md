@@ -14,9 +14,10 @@ the same `dice` and `ehex` foundation.
 
 MegaTraveller extends the classic profile with a referee-chosen **subsector
 nature** (which shapes the starport), a **non-imperial military base**, derived
-**trade classifications**, and a **gas-giant** count. TNE shares MegaTraveller's
-nature-driven starport and military base but has no trade or gas-giant layer, so
-a TNE world is a UWP plus bases.
+**trade classifications**, and the two system-level counts on its generation
+flowchart — **gas giants** and **planetoid belts**. TNE shares MegaTraveller's
+nature-driven starport and military base but has no trade or system-count layer,
+so a TNE world is a UWP plus bases.
 
 ## Usage
 
@@ -70,7 +71,7 @@ $ go run ./cmd/worldgen classic -seed 42 -format json
 }
 
 $ go run ./cmd/worldgen mega -seed 42
-Japu  X200346-2  None
+Pupijou  X200346-2  None
   Starport      X  None; no starport
   Size          2  Small (3,200 km, Luna)
   Atmosphere    0  Vacuum
@@ -81,12 +82,13 @@ Japu  X200346-2  None
   Tech Level    2  Pre-Industrial (printing press)
   Trade         Lo Ni Va
   Gas Giants    5
+  Belts         1
 
 $ go run ./cmd/worldgen mega -seed 1977 -n 4 -format uwp
-Briheil        C645856-7  SM  G3  -
-Hite           B675453-A  -   G1  Ni
-Tifeifarn      E328755-7  -   -   -
-Fufougaess     A83A336-D  N   G3  Lo Ni Wa
+Paedrucil      C645856-7  SM  G3  -   -
+Niagaevei      B452452-B  N   G3  -   Ni Po
+Voupaher       C748754-9  -   -   -   Ag
+Daehia         E787645-5  -   G4  B1  Ag Ni Ri
 
 $ go run ./cmd/worldgen tne -seed 1977 -n 4 -format uwp
 Robriheil      C645856-7  SM
@@ -98,8 +100,9 @@ Liafufous      A83A336-D  N
 The `uwp` base column is a compact code. Classic: `N` naval, `S` scout, `NS`
 both, `—` none. MegaTraveller and TNE: `N` naval, `S` scout, `A` naval + scout,
 plus a trailing `M` for a non-imperial military base. The MegaTraveller line then
-carries a gas-giant marker (`G`_n_) and the trade codes (`-` for an empty field);
-TNE's line ends at the base code (`—` when none).
+carries a gas-giant marker (`G`_n_), a planetoid-belt marker (`B`_n_), and the
+trade codes (`-` for an empty field); TNE's line ends at the base code (`—` when
+none).
 
 ## Layout
 
@@ -114,7 +117,7 @@ Per-edition rules (each self-contained, sharing `dice` and `ehex`):
   generation, descriptions, and the name generator.
 - `megatraveller/` — MegaTraveller Referee's Manual: the same shape plus the
   nature-driven starport table, bases (incl. military), trade classifications,
-  and gas giants.
+  gas giants, and planetoid belts.
 - `tne/` — Traveller: The New Era: MegaTraveller's UWP generation (nature-driven
   starport, military base) minus the trade and gas-giant layers.
 - _future_ — `mongoose/`, `t5/`, … as sibling packages.
@@ -188,9 +191,10 @@ reconstruction.
 
 **Deferred.** The Basic Mainworld Generation flowchart has no bases step and the
 sources give no throw that promotes a scout base to a Way Station, so base code
-`B` is deferred — the generator emits `N`/`S`/`A`/`M`. Extended System
-Generation (orbits, satellites, planetoid belts, travel zones, allegiance) is out
-of scope.
+`B` is deferred — the generator emits `N`/`S`/`A`/`M`. Gas giants and planetoid
+belts (the flowchart's two system-level counts) are generated; the fuller
+Extended System Generation (stars, orbits, satellites, additional planets),
+travel zones, and allegiance remain out of scope.
 
 ### TNE (The New Era)
 

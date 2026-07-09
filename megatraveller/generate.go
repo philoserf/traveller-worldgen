@@ -57,9 +57,10 @@ func NatureNames() []string {
 // Generate rolls a single world from r for the given subsector nature. Draws
 // happen in a fixed order — starport, naval base, scout base, military base,
 // size, atmosphere, hydrographics, population, government, law level, tech level,
-// gas-giant presence (then quantity), name — so a given seed always reproduces
-// the same world. Bases, the size-0/1 automatic results, and the gas-giant
-// quantity consume no die when they do not apply.
+// gas-giant presence (then quantity), planetoid-belt presence (then quantity),
+// name — so a given seed always reproduces the same world. Bases, the size-0/1
+// automatic results, and the gas-giant/belt quantities consume no die when they
+// do not apply.
 func Generate(r dice.Roller, nature Nature) World {
 	var w World
 	w.Starport = rollStarport(r, nature)
@@ -75,6 +76,7 @@ func Generate(r dice.Roller, nature Nature) World {
 	w.LawLevel = floor0(r.D6(2) - 7 + w.Government)
 	w.TechLevel = rollTech(r, w)
 	w.GasGiants = rollGasGiants(r)
+	w.PlanetoidBelts = rollPlanetoidBelts(r)
 	w.Name = generateName(r)
 	return w
 }
@@ -139,6 +141,15 @@ func rollGasGiants(r dice.Roller) int {
 		return 0
 	}
 	return gasGiantQty[r.D6(2)]
+}
+
+// rollPlanetoidBelts rolls planetoid-belt presence (2D >= 8) and, when present, a
+// 2D quantity. When absent, the quantity die is not rolled.
+func rollPlanetoidBelts(r dice.Roller) int {
+	if r.D6(2) < 8 {
+		return 0
+	}
+	return beltQty[r.D6(2)]
 }
 
 // floor0 clamps a value to a minimum of 0 (negative DM results are treated as 0).
