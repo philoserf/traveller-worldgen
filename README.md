@@ -7,14 +7,16 @@ a generated name.
 
 The repo is organized to hold **each edition of Traveller's world generation
 side by side**. Today that is **Classic Traveller** (_Book 3: Worlds and
-Adventures_, GDW 1977) in the `classic/` package and **MegaTraveller**
-(_Referee's Manual_, DGP/GDW 1987) in the `megatraveller/` package; further
-editions (Mongoose, T5, …) are added as sibling packages sharing the same `dice`
-and `ehex` foundation.
+Adventures_, GDW 1977) in `classic/`, **MegaTraveller** (_Referee's Manual_,
+DGP/GDW 1987) in `megatraveller/`, and **Traveller: The New Era** (GDW 1993) in
+`tne/`; further editions (Mongoose, T5, …) are added as sibling packages sharing
+the same `dice` and `ehex` foundation.
 
 MegaTraveller extends the classic profile with a referee-chosen **subsector
 nature** (which shapes the starport), a **non-imperial military base**, derived
-**trade classifications**, and a **gas-giant** count.
+**trade classifications**, and a **gas-giant** count. TNE shares MegaTraveller's
+nature-driven starport and military base but has no trade or gas-giant layer, so
+a TNE world is a UWP plus bases.
 
 ## Usage
 
@@ -24,6 +26,7 @@ Each edition is a subcommand:
 worldgen <edition> [flags]
 worldgen classic [-seed N] [-format text|uwp|json] [-n COUNT]
 worldgen mega    [-seed N] [-format text|uwp|json] [-n COUNT] [-nature NATURE]
+worldgen tne     [-seed N] [-format text|uwp|json] [-n COUNT] [-nature NATURE]
 ```
 
 Run `worldgen` with no arguments to list editions. Flags shared by every
@@ -34,7 +37,7 @@ edition:
 - `-n COUNT` — generate COUNT independent worlds (default 1). A single seed
   reproduces the whole batch.
 
-MegaTraveller adds:
+MegaTraveller and TNE add:
 
 - `-nature` — subsector nature selecting the starport column: `backwater`,
   `standard` (default), `mature`, or `cluster`.
@@ -84,13 +87,19 @@ Briheil        C645856-7  SM  G3  -
 Hite           B675453-A  -   G1  Ni
 Tifeifarn      E328755-7  -   -   -
 Fufougaess     A83A336-D  N   G3  Lo Ni Wa
+
+$ go run ./cmd/worldgen tne -seed 1977 -n 4 -format uwp
+Robriheil      C645856-7  SM
+Sihir          B675453-A  —
+Tifeifarn      C496333-5  S
+Liafufous      A83A336-D  N
 ```
 
 The `uwp` base column is a compact code. Classic: `N` naval, `S` scout, `NS`
-both, `—` none. MegaTraveller: `N` naval, `S` scout, `A` naval + scout, plus a
-trailing `M` for a non-imperial military base (`-` when empty); its line then
-carries a gas-giant marker (`G`_n_) and the trade codes, with `-` for an empty
-field.
+both, `—` none. MegaTraveller and TNE: `N` naval, `S` scout, `A` naval + scout,
+plus a trailing `M` for a non-imperial military base. The MegaTraveller line then
+carries a gas-giant marker (`G`_n_) and the trade codes (`-` for an empty field);
+TNE's line ends at the base code (`—` when none).
 
 ## Layout
 
@@ -106,21 +115,26 @@ Per-edition rules (each self-contained, sharing `dice` and `ehex`):
 - `megatraveller/` — MegaTraveller Referee's Manual: the same shape plus the
   nature-driven starport table, bases (incl. military), trade classifications,
   and gas giants.
+- `tne/` — Traveller: The New Era: MegaTraveller's UWP generation (nature-driven
+  starport, military base) minus the trade and gas-giant layers.
 - _future_ — `mongoose/`, `t5/`, … as sibling packages.
 
 CLI and docs:
 
 - `cmd/worldgen/` — the CLI. `main.go` dispatches on an edition subcommand;
-  each edition has its own runner file (`classic.go`, `megatraveller.go`)
-  registered in the `editions` map.
+  each edition has its own runner file (`classic.go`, `megatraveller.go`,
+  `tne.go`) registered in the `editions` map.
 - `docs/<edition>/` — the source PDF(s) and the verified rules extract.
 
 **Adding an edition** means: a new rules package (e.g. `mongoose/`), a
 `cmd/worldgen/<edition>.go` runner, and one entry in the `editions` map. The
 rules packages stay deliberately independent (duplication over premature
-abstraction); the only shared CLI seam extracted so far is the generic
-`renderWorldsJSON[T]`. A cross-edition `Generator` interface is still **not**
-defined — rendering differs enough per edition that it hasn't earned one.
+abstraction), but the CLI scaffolding is shared: a generic `runEdition[T]` owns
+the flag parse / seed / generate / write flow, and `renderWorlds[T]` /
+`renderWorldsJSON[T]` own output formatting — so a runner supplies only its
+edition-specific flags, generator, and per-world formatters. A cross-edition
+`Generator` interface over the rules packages is still **not** defined; it hasn't
+earned one.
 
 ## Development
 
@@ -177,3 +191,21 @@ sources give no throw that promotes a scout base to a Way Station, so base code
 `B` is deferred — the generator emits `N`/`S`/`A`/`M`. Extended System
 Generation (orbits, satellites, planetoid belts, travel zones, allegiance) is out
 of scope.
+
+### TNE (The New Era)
+
+**Source.** The _World Tamer's Handbook_ (which prompted this edition) turned out
+not to contain the core UWP generation — its Stars & Planets chapter defers to
+"pages 192–195 of the TNE rulebook." So the tables come from the **TNE core
+rulebook** (Basic Mainworld Generation, printed pp. 186–190); the WTH's
+"Detailing Planets" physical layer is out of scope.
+
+**Near-identical to MegaTraveller.** TNE's UWP generation matches MegaTraveller's
+almost exactly — same starport-by-nature table, formulas, and bases. It notably
+prints **Starport A tech-DM `+6`**, confirming the value MegaTraveller misprints
+as `+8`. The only rules differences: the tech-DM matrix adds Starport F `+1` and
+Government E/F `−1`, and TNE has **no trade-classification or gas-giant step**.
+
+**Deferred.** TNE's Planetary-Density → surface-gravity step (part of world size)
+and the WTH detail layer (temperature, atmospheric composition, world mass) are
+physical data beyond the UWP, out of scope.
