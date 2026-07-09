@@ -112,6 +112,21 @@ func TestClassicErrors(t *testing.T) {
 	}
 }
 
+func TestClassicHelp(t *testing.T) {
+	// `worldgen classic -h` is a help request, not an error: exit 0, flags to
+	// stdout, nothing on stderr — consistent with the top-level `--help`.
+	code, out, errStr := runCapture(t, "classic", "-h")
+	if code != 0 {
+		t.Errorf("exit = %d, want 0", code)
+	}
+	if !strings.Contains(out, "-seed") {
+		t.Errorf("help should list the -seed flag on stdout, got: %s", out)
+	}
+	if strings.TrimSpace(errStr) != "" {
+		t.Errorf("help should not write to stderr, got: %s", errStr)
+	}
+}
+
 func TestDispatch(t *testing.T) {
 	t.Run("no args lists editions", func(t *testing.T) {
 		code, _, errStr := runCapture(t)

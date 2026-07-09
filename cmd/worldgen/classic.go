@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -16,13 +17,21 @@ import (
 // exit code: 0 on success, 1 on an output error, 2 on a usage error.
 func runClassic(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("worldgen classic", flag.ContinueOnError)
-	fs.SetOutput(stderr)
+	fs.SetOutput(io.Discard) // suppress flag's auto-print; we route help/errors ourselves
 
 	seed := fs.Int64("seed", 0, "random seed (default: time-based)")
 	format := fs.String("format", "text", "output format: text, uwp, or json")
 	n := fs.Int("n", 1, "number of independent worlds to generate")
 
 	if err := fs.Parse(args); err != nil {
+		// -h/-help is a help request, not a usage error: print to stdout, exit 0
+		// (matching the top-level `worldgen --help`).
+		if errors.Is(err, flag.ErrHelp) {
+			fs.SetOutput(stdout)
+			fs.Usage()
+			return 0
+		}
+		errf(stderr, "worldgen classic: %v\n", err)
 		return 2
 	}
 	if *n < 1 {
