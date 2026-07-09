@@ -8,6 +8,16 @@ tasks:
       - task: check
       - task: test
 
+  deps:
+    desc: Install the dev toolchain from the Brewfile
+    cmds:
+      - brew bundle --file=Brewfile
+
+  deps:check:
+    desc: Verify the Brewfile dev toolchain is installed
+    cmds:
+      - brew bundle check --file=Brewfile
+
   check:
     desc: gofumpt + go vet + golangci-lint
     cmds:
