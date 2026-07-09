@@ -194,11 +194,12 @@ var gasGiantQty = map[int]int{
 	2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4, 10: 4, 11: 5, 12: 5,
 }
 
-// beltQty maps a 2D quantity roll to the number of planetoid belts present
-// (Planetoid Belt Quantity table), consulted only after an 8+ presence roll. The
-// printed table also lists 13 -> 3, but the step gives no DM, so a plain 2D roll
-// reaches only 2-12; the 13 entry is transcribed for fidelity but unreachable.
-var beltQty = map[int]int{
+// planetoidBeltQty maps a 2D quantity roll to the number of planetoid belts
+// present (Planetoid Belt Quantity table), consulted only after an 8+ presence
+// roll. The printed table also lists 13 -> 3, but the step gives no DM, so a
+// plain 2D roll reaches only 2-12; the 13 entry is transcribed for fidelity but
+// unreachable.
+var planetoidBeltQty = map[int]int{
 	2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 3,
 }
 

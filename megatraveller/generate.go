@@ -149,7 +149,7 @@ func rollPlanetoidBelts(r dice.Roller) int {
 	if r.D6(2) < 8 {
 		return 0
 	}
-	return beltQty[r.D6(2)]
+	return planetoidBeltQty[r.D6(2)]
 }
 
 // floor0 clamps a value to a minimum of 0 (negative DM results are treated as 0).

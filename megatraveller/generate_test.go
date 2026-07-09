@@ -190,7 +190,7 @@ func TestGovernmentAndLawReachExtendedRange(t *testing.T) {
 	}
 }
 
-func TestGasGiantsAbsentConsumesNoQuantityDie(t *testing.T) {
+func TestGasGiantsAndBeltsAbsentConsumeNoQuantityDie(t *testing.T) {
 	t.Parallel()
 
 	// A gas-giant presence roll below 5 (and a belt presence roll below 8) means
