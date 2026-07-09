@@ -48,9 +48,10 @@ func (w World) UWP() string {
 	)
 }
 
-// BaseCode returns the compact library-data base code: "N", "S", or "A" (naval
-// and scout) with an "M" appended for a non-imperial military base, or "" when
-// there are no bases. Code B (Scout Way Station) is deferred (see § Bases).
+// BaseCode returns the compact library-data base code. The imperial bases give
+// "N" (naval), "S" (scout), or "A" (both); a non-imperial military base appends
+// "M", so the possibilities are "", "N", "S", "A", "M", "NM", "SM", and "AM".
+// Code B (Scout Way Station) is deferred (see § Bases).
 func (w World) BaseCode() string {
 	var code string
 	switch {

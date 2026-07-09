@@ -62,6 +62,13 @@ Adjusted rolls below 0 are treated as 0. Because Gov/Law/Atmo/Tech maxima
 (F/L/F/L) equal the highest the dice yield, every result has a defined
 description.
 
+The table lists Bases at step 9 because a base depends only on the starport, but
+the **implementation draws the base rolls immediately after the starport**
+(before World Size), matching the `classic` package. The base rolls need only the
+starport, so the result is identical either way; rolling them early just keeps a
+single, stable dice-draw order across editions for seed reproducibility. The
+authoritative draw order is documented on `megatraveller.Generate`.
+
 ---
 
 ## Starport (2D)
