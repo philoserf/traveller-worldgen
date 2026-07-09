@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -79,7 +78,7 @@ func runClassic(args []string, stdout, stderr io.Writer) int {
 func renderClassic(format string, worlds []classic.World) (string, error) {
 	switch format {
 	case "json":
-		return renderClassicJSON(worlds)
+		return renderWorldsJSON(worlds)
 	case "uwp":
 		var b strings.Builder
 		for _, w := range worlds {
@@ -97,23 +96,6 @@ func renderClassic(format string, worlds []classic.World) (string, error) {
 		}
 		return b.String(), nil
 	}
-}
-
-// renderClassicJSON marshals one world as an object, or several as an array.
-func renderClassicJSON(worlds []classic.World) (string, error) {
-	var (
-		data []byte
-		err  error
-	)
-	if len(worlds) == 1 {
-		data, err = json.MarshalIndent(worlds[0], "", "  ")
-	} else {
-		data, err = json.MarshalIndent(worlds, "", "  ")
-	}
-	if err != nil {
-		return "", fmt.Errorf("encoding json: %w", err)
-	}
-	return string(data) + "\n", nil
 }
 
 // uwpLine renders one world as a single line: name, UWP, and a compact base
