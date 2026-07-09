@@ -107,7 +107,7 @@ func TestMegaJSONFields(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &obj); err != nil {
 		t.Fatalf("invalid JSON: %v\n%s", err, out)
 	}
-	for _, field := range []string{"uwp", "militaryBase", "gasGiants", "tradeCodes", "baseCode"} {
+	for _, field := range []string{"uwp", "militaryBase", "gasGiants", "planetoidBelts", "tradeCodes", "baseCode"} {
 		if _, ok := obj[field]; !ok {
 			t.Errorf("JSON missing %q field", field)
 		}

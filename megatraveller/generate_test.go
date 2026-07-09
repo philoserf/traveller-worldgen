@@ -10,7 +10,7 @@ import (
 // TestWorkedExample feeds a hand-computed dice sequence (Standard subsector) and
 // asserts the exact resulting world: starport A, naval+scout+military bases,
 // size 8, atmosphere 6, hydrographics 7, population 8, government 4, law 5,
-// tech 9 (1D=3 + starport-A +6), gas giants 3, name "Varon".
+// tech 9 (1D=3 + starport-A +6), gas giants 3, planetoid belts 2, name "Varon".
 func TestWorkedExample(t *testing.T) {
 	t.Parallel()
 
@@ -28,25 +28,28 @@ func TestWorkedExample(t *testing.T) {
 		3,  // tech 1D=3 (+6 starport A) -> 9
 		8,  // gas giants present (2D>=5)
 		7,  // gas giant quantity 2D=7 -> 3
+		10, // planetoid belts present (2D>=8)
+		8,  // planetoid belt quantity 2D=8 -> 2
 		// name: 2 syllables "va"+"ro"+coda "n" -> Varon
 		2, 3, 4, 1, 1, 3, 1, 1, 4, 5, 1, 1,
 	}
 	w := megatraveller.Generate(dice.NewScripted(seq...), megatraveller.Standard)
 
 	want := megatraveller.World{
-		Name:          "Varon",
-		Starport:      'A',
-		Size:          8,
-		Atmosphere:    6,
-		Hydrographics: 7,
-		Population:    8,
-		Government:    4,
-		LawLevel:      5,
-		TechLevel:     9,
-		NavalBase:     true,
-		ScoutBase:     true,
-		MilitaryBase:  true,
-		GasGiants:     3,
+		Name:           "Varon",
+		Starport:       'A',
+		Size:           8,
+		Atmosphere:     6,
+		Hydrographics:  7,
+		Population:     8,
+		Government:     4,
+		LawLevel:       5,
+		TechLevel:      9,
+		NavalBase:      true,
+		ScoutBase:      true,
+		MilitaryBase:   true,
+		GasGiants:      3,
+		PlanetoidBelts: 2,
 	}
 	if w != want {
 		t.Fatalf("world mismatch:\n got %+v\nwant %+v", w, want)
@@ -190,9 +193,10 @@ func TestGovernmentAndLawReachExtendedRange(t *testing.T) {
 func TestGasGiantsAbsentConsumesNoQuantityDie(t *testing.T) {
 	t.Parallel()
 
-	// A presence roll below 5 means no gas giants and no quantity die is drawn,
-	// so the immediately following die must feed the name generator. If a quantity
-	// die were wrongly consumed, the Scripted roller would exhaust and panic.
+	// A gas-giant presence roll below 5 (and a belt presence roll below 8) means
+	// no quantity die is drawn for either, so the following dice feed the name
+	// generator. If a quantity die were wrongly consumed, the Scripted roller
+	// would exhaust and panic.
 	w := megatraveller.Generate(dice.NewScripted(
 		12,                                 // starport X
 		2,                                  // size -> 0
@@ -201,13 +205,17 @@ func TestGasGiantsAbsentConsumesNoQuantityDie(t *testing.T) {
 		7,                                  // law
 		1,                                  // tech
 		4,                                  // gas giants presence 2D=4 (<5) -> absent
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // name (exactly 12, no quantity die)
+		2,                                  // planetoid belts presence 2D=2 (<8) -> absent
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // name (no quantity dice consumed)
 	), megatraveller.Standard)
 	if w.GasGiants != 0 {
 		t.Fatalf("gas giants = %d, want 0", w.GasGiants)
 	}
+	if w.PlanetoidBelts != 0 {
+		t.Fatalf("planetoid belts = %d, want 0", w.PlanetoidBelts)
+	}
 	if w.Name == "" {
-		t.Fatal("empty name (quantity die may have stolen a name die)")
+		t.Fatal("empty name (a quantity die may have stolen a name die)")
 	}
 }
 
@@ -240,6 +248,9 @@ func TestPropertyRanges(t *testing.T) {
 			checkRange(t, seed, "lawLevel", w.LawLevel, 20)
 			checkRange(t, seed, "techLevel", w.TechLevel, 20)
 			checkRange(t, seed, "gasGiants", w.GasGiants, 5)
+			// A plain 2D belt-quantity roll reaches only 2-12, so at most 2 belts
+			// (the printed 13->3 row is unreachable without a DM).
+			checkRange(t, seed, "planetoidBelts", w.PlanetoidBelts, 2)
 
 			// Naval only on A/B; scout only on A-D; military only on A-C.
 			if w.NavalBase && w.Starport != 'A' && w.Starport != 'B' {

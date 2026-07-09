@@ -14,21 +14,23 @@ import (
 )
 
 // World is a single generated MegaTraveller mainworld: a name plus the eight
-// UWP characteristics, the three possible bases, and the gas-giant count.
+// UWP characteristics, the three possible bases, and the system-level gas-giant
+// and planetoid-belt counts.
 type World struct {
-	Name          string
-	Starport      byte
-	Size          int
-	Atmosphere    int
-	Hydrographics int
-	Population    int
-	Government    int
-	LawLevel      int
-	TechLevel     int
-	NavalBase     bool
-	ScoutBase     bool
-	MilitaryBase  bool // Non-Imperial Military (base code M)
-	GasGiants     int
+	Name           string
+	Starport       byte
+	Size           int
+	Atmosphere     int
+	Hydrographics  int
+	Population     int
+	Government     int
+	LawLevel       int
+	TechLevel      int
+	NavalBase      bool
+	ScoutBase      bool
+	MilitaryBase   bool // Non-Imperial Military (base code M)
+	GasGiants      int
+	PlanetoidBelts int
 }
 
 // UWP returns the Universal World Profile string, e.g. "A867845-9": starport,
@@ -164,39 +166,41 @@ func (w World) Profile() []Characteristic {
 // the convenience UWP and trade-code fields alongside the raw values.
 func (w World) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Name          string   `json:"name"`
-		UWP           string   `json:"uwp"`
-		Starport      string   `json:"starport"`
-		Size          int      `json:"size"`
-		Atmosphere    int      `json:"atmosphere"`
-		Hydrographics int      `json:"hydrographics"`
-		Population    int      `json:"population"`
-		Government    int      `json:"government"`
-		LawLevel      int      `json:"lawLevel"`
-		TechLevel     int      `json:"techLevel"`
-		NavalBase     bool     `json:"navalBase"`
-		ScoutBase     bool     `json:"scoutBase"`
-		MilitaryBase  bool     `json:"militaryBase"`
-		BaseCode      string   `json:"baseCode"`
-		GasGiants     int      `json:"gasGiants"`
-		TradeCodes    []string `json:"tradeCodes"`
+		Name           string   `json:"name"`
+		UWP            string   `json:"uwp"`
+		Starport       string   `json:"starport"`
+		Size           int      `json:"size"`
+		Atmosphere     int      `json:"atmosphere"`
+		Hydrographics  int      `json:"hydrographics"`
+		Population     int      `json:"population"`
+		Government     int      `json:"government"`
+		LawLevel       int      `json:"lawLevel"`
+		TechLevel      int      `json:"techLevel"`
+		NavalBase      bool     `json:"navalBase"`
+		ScoutBase      bool     `json:"scoutBase"`
+		MilitaryBase   bool     `json:"militaryBase"`
+		BaseCode       string   `json:"baseCode"`
+		GasGiants      int      `json:"gasGiants"`
+		PlanetoidBelts int      `json:"planetoidBelts"`
+		TradeCodes     []string `json:"tradeCodes"`
 	}{
-		Name:          w.Name,
-		UWP:           w.UWP(),
-		Starport:      string(w.Starport),
-		Size:          w.Size,
-		Atmosphere:    w.Atmosphere,
-		Hydrographics: w.Hydrographics,
-		Population:    w.Population,
-		Government:    w.Government,
-		LawLevel:      w.LawLevel,
-		TechLevel:     w.TechLevel,
-		NavalBase:     w.NavalBase,
-		ScoutBase:     w.ScoutBase,
-		MilitaryBase:  w.MilitaryBase,
-		BaseCode:      w.BaseCode(),
-		GasGiants:     w.GasGiants,
-		TradeCodes:    w.TradeCodes(),
+		Name:           w.Name,
+		UWP:            w.UWP(),
+		Starport:       string(w.Starport),
+		Size:           w.Size,
+		Atmosphere:     w.Atmosphere,
+		Hydrographics:  w.Hydrographics,
+		Population:     w.Population,
+		Government:     w.Government,
+		LawLevel:       w.LawLevel,
+		TechLevel:      w.TechLevel,
+		NavalBase:      w.NavalBase,
+		ScoutBase:      w.ScoutBase,
+		MilitaryBase:   w.MilitaryBase,
+		BaseCode:       w.BaseCode(),
+		GasGiants:      w.GasGiants,
+		PlanetoidBelts: w.PlanetoidBelts,
+		TradeCodes:     w.TradeCodes(),
 	})
 }
 

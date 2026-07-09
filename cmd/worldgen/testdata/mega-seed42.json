@@ -1,5 +1,5 @@
 {
-  "name": "Japu",
+  "name": "Pupijou",
   "uwp": "X200346-2",
   "starport": "X",
   "size": 2,
@@ -14,6 +14,7 @@
   "militaryBase": false,
   "baseCode": "",
   "gasGiants": 5,
+  "planetoidBelts": 1,
   "tradeCodes": [
     "Lo",
     "Ni",

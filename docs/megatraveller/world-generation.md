@@ -57,6 +57,7 @@ scope.
 | 9    | Bases                 | per-starport throws → N/S/A/B/M                                     |
 | 10   | Trade classifications | derived from the UWP                                                |
 | 11   | Gas giants            | 5+ on 2D for presence, then a quantity roll                         |
+| 12   | Planetoid belts       | 8+ on 2D for presence, then a quantity roll                         |
 
 Adjusted rolls below 0 are treated as 0. Because Gov/Law/Atmo/Tech maxima
 (F/L/F/L) equal the highest the dice yield, every result has a defined
@@ -379,8 +380,36 @@ Roll **5+ on 2D**; if present, roll 2D for the quantity.
 
 ---
 
+## Planetoid belts
+
+Roll **8+ on 2D**; if present, roll 2D for the quantity (Referee's Manual step
+16, p. 25).
+
+| 2D  | Planetoid belts |
+| --- | --------------- |
+| 2   | 1               |
+| 3   | 1               |
+| 4   | 1               |
+| 5   | 1               |
+| 6   | 1               |
+| 7   | 1               |
+| 8   | 2               |
+| 9   | 2               |
+| 10  | 2               |
+| 11  | 2               |
+| 12  | 2               |
+| 13  | 3               |
+
+The printed table includes a **13** row (→ 3), but the step gives no DM, so a
+plain 2D quantity roll reaches only 2–12 (at most 2 belts); the 13 row is
+transcribed for fidelity but is unreachable here.
+
+---
+
 ## Out of scope
 
-Extended System Generation (orbits, satellites, additional planets, planetoid
-belts), Population Multiplier, Travel Zones, Supplemental Remarks, and Allegiance
-— referee/setting layers or the deeper system model, deferred per project scope.
+Extended System Generation (orbits, satellites, additional planets), Population
+Multiplier, Travel Zones, Supplemental Remarks, and Allegiance — referee/setting
+layers or the deeper system model, deferred per project scope. (Gas giants and
+planetoid belts, the two system-level counts on the printed flowchart, are
+generated; the fuller orbit/star/body model is not.)
