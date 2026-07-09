@@ -19,16 +19,16 @@ func runCapture(t *testing.T, args ...string) (int, string, string) {
 	return code, out.String(), errBuf.String()
 }
 
-func TestRunGoldenFormats(t *testing.T) {
+func TestClassicGoldenFormats(t *testing.T) {
 	cases := []struct {
 		name   string
 		args   []string
 		golden string
 	}{
-		{"text", []string{"-seed", "42"}, "seed42.text"},
-		{"uwp", []string{"-seed", "42", "-format", "uwp"}, "seed42.uwp"},
-		{"json", []string{"-seed", "42", "-format", "json"}, "seed42.json"},
-		{"batch", []string{"-seed", "7", "-n", "3", "-format", "uwp"}, "seed7n3.uwp"},
+		{"text", []string{"classic", "-seed", "42"}, "seed42.text"},
+		{"uwp", []string{"classic", "-seed", "42", "-format", "uwp"}, "seed42.uwp"},
+		{"json", []string{"classic", "-seed", "42", "-format", "json"}, "seed42.json"},
+		{"batch", []string{"classic", "-seed", "7", "-n", "3", "-format", "uwp"}, "seed7n3.uwp"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -54,16 +54,16 @@ func TestRunGoldenFormats(t *testing.T) {
 	}
 }
 
-func TestRunDeterministic(t *testing.T) {
-	_, a, _ := runCapture(t, "-seed", "123")
-	_, b, _ := runCapture(t, "-seed", "123")
+func TestClassicDeterministic(t *testing.T) {
+	_, a, _ := runCapture(t, "classic", "-seed", "123")
+	_, b, _ := runCapture(t, "classic", "-seed", "123")
 	if a != b {
 		t.Fatalf("same seed produced different output:\n%s\n---\n%s", a, b)
 	}
 }
 
-func TestRunJSONValid(t *testing.T) {
-	code, out, errStr := runCapture(t, "-seed", "42", "-format", "json")
+func TestClassicJSONValid(t *testing.T) {
+	code, out, errStr := runCapture(t, "classic", "-seed", "42", "-format", "json")
 	if code != 0 {
 		t.Fatalf("exit %d, stderr: %s", code, errStr)
 	}
@@ -76,8 +76,8 @@ func TestRunJSONValid(t *testing.T) {
 	}
 }
 
-func TestRunJSONArrayForBatch(t *testing.T) {
-	code, out, _ := runCapture(t, "-seed", "42", "-n", "2", "-format", "json")
+func TestClassicJSONArrayForBatch(t *testing.T) {
+	code, out, _ := runCapture(t, "classic", "-seed", "42", "-n", "2", "-format", "json")
 	if code != 0 {
 		t.Fatalf("exit %d", code)
 	}
@@ -90,14 +90,14 @@ func TestRunJSONArrayForBatch(t *testing.T) {
 	}
 }
 
-func TestRunErrors(t *testing.T) {
+func TestClassicErrors(t *testing.T) {
 	cases := []struct {
 		name string
 		args []string
 	}{
-		{"unknown flag", []string{"-nope"}},
-		{"bad format", []string{"-format", "xml"}},
-		{"bad n", []string{"-n", "0"}},
+		{"unknown flag", []string{"classic", "-nope"}},
+		{"bad format", []string{"classic", "-format", "xml"}},
+		{"bad n", []string{"classic", "-n", "0"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -110,4 +110,34 @@ func TestRunErrors(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDispatch(t *testing.T) {
+	t.Run("no args lists editions", func(t *testing.T) {
+		code, _, errStr := runCapture(t)
+		if code != 2 {
+			t.Errorf("exit = %d, want 2", code)
+		}
+		if !strings.Contains(errStr, "classic") {
+			t.Errorf("usage should list editions, got: %s", errStr)
+		}
+	})
+	t.Run("help to stdout", func(t *testing.T) {
+		code, out, _ := runCapture(t, "--help")
+		if code != 0 {
+			t.Errorf("exit = %d, want 0", code)
+		}
+		if !strings.Contains(out, "classic") {
+			t.Errorf("help should list editions, got: %s", out)
+		}
+	})
+	t.Run("unknown edition", func(t *testing.T) {
+		code, _, errStr := runCapture(t, "mongoose")
+		if code != 2 {
+			t.Errorf("exit = %d, want 2", code)
+		}
+		if !strings.Contains(errStr, "unknown edition") {
+			t.Errorf("expected unknown-edition message, got: %s", errStr)
+		}
+	})
 }

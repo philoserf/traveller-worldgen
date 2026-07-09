@@ -13,9 +13,14 @@ Adventures_, GDW 1977) in the `classic/` package; future editions
 
 ## Usage
 
+Each edition is a subcommand:
+
 ```
-worldgen [-seed N] [-format text|uwp|json] [-n COUNT]
+worldgen <edition> [flags]
+worldgen classic [-seed N] [-format text|uwp|json] [-n COUNT]
 ```
+
+Run `worldgen` with no arguments to list editions. Classic flags:
 
 - `-seed N` — seed for reproducibility (omitted → time-based).
 - `-format` — `text` (default), `uwp`, or `json`.
@@ -25,7 +30,7 @@ worldgen [-seed N] [-format text|uwp|json] [-n COUNT]
 ### Examples
 
 ```
-$ go run ./cmd/worldgen -seed 42
+$ go run ./cmd/worldgen classic -seed 42
 Draejapu  X200346-2  None
   Starport      X  No starport; no provision for starship landings
   Size          2  2,000 miles diameter
@@ -36,13 +41,13 @@ Draejapu  X200346-2  None
   Law Level     6  Most firearms (all except shotguns) prohibited
   Tech Level    2  Halberd, Broadsword · Cannon · Wind
 
-$ go run ./cmd/worldgen -seed 1977 -n 4 -format uwp
+$ go run ./cmd/worldgen classic -seed 1977 -n 4 -format uwp
 Horou          C674474-9  S
 Peimern        E7A5431-5  —
 Nojeis         C110875-A  S
 Houreir        C250555-9  —
 
-$ go run ./cmd/worldgen -seed 42 -format json
+$ go run ./cmd/worldgen classic -seed 42 -format json
 {
   "name": "Draejapu",
   "uwp": "X200346-2",
@@ -69,12 +74,16 @@ Per-edition rules:
 
 CLI and docs:
 
-- `cmd/worldgen/` — the CLI (currently generates Classic worlds).
+- `cmd/worldgen/` — the CLI. `main.go` dispatches on an edition subcommand;
+  each edition has its own runner file (`classic.go`) registered in the
+  `editions` map.
 - `docs/classic/` — the Book 3 source PDF and the verified rules extract.
 
-A cross-edition `Generator` interface is deliberately **not** defined yet — the
-right seam only becomes clear with a second edition in hand, so it will be
-extracted then rather than guessed at now.
+**Adding an edition** means: a new rules package (e.g. `mega/`), a
+`cmd/worldgen/mega.go` runner, and one entry in the `editions` map. A
+cross-edition `Generator` interface and a shared renderer are deliberately
+**not** defined yet — the right seam only becomes clear with a second edition in
+hand, so they will be extracted then rather than guessed at now.
 
 ## Development
 
