@@ -6,9 +6,9 @@ package t5
 // are condensed from the source prose.
 
 // beyondRange is the description returned for a characteristic value with no
-// table entry. T5's UWP ranges (Size/Atm/Gov 0–F, Law 0–J, Hyd 0–A) are complete
-// for every value generation can produce, so this only surfaces for a Tech Level
-// past the last era band (Book 3 gives no TL prose table; see the doc).
+// table entry. T5's UWP ranges (Size/Atm/Gov 0–F, Law 0–J, Hyd 0–A) and the
+// reachable Tech Levels (0–20) are all complete, so this never surfaces in
+// practice; it is a safety net.
 const beyondRange = "(beyond described range)"
 
 // starportDesc maps a starport code to its description (Book 3 p. 24, table 1A).
@@ -146,8 +146,9 @@ var lawDesc = map[int]string{
 
 // techDesc maps a tech level to its era-band description. Book 3 p. 25 gives only
 // the TL DM formula, so these edition-invariant Traveller bands are shared with
-// the tne package (see the doc). TL = 1D + DMs can reach ~22; values past 20
-// fall through to beyondRange.
+// the tne package (see the doc). TL = 1D + DMs tops out at 20: the +2 size DM
+// (size 0–1) and +2 hydrographics DM (hydro A) can never both apply, because
+// size < 2 forces hydrographics to 0. So every reachable TL has a band here.
 var techDesc = map[int]string{
 	0:  "Pre-Industrial (primitive)",
 	1:  "Pre-Industrial (bronze, iron)",

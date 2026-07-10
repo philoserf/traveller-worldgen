@@ -67,8 +67,10 @@ generated:
 Core Book 3 p. 25 gives only the **TL DM formula**, not a prose table. Tech-level
 _values_ are generated exactly per that formula; the era-band descriptions used
 for display are the edition-invariant Traveller TL bands (identical to the `tne`
-package's, since these labels do not change between editions). A value past the
-last band renders as "(beyond described range)".
+package's, since these labels do not change between editions). A generated TL
+tops out at 20 — the +2 size DM (size 0–1) and +2 hydrographics DM (hydro A)
+cannot both apply, since size < 2 forces hydrographics to 0 — so every reachable
+value has a band and "(beyond described range)" never surfaces.
 
 ---
 
