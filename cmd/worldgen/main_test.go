@@ -322,6 +322,101 @@ func TestClassicHelp(t *testing.T) {
 	}
 }
 
+func TestT5GoldenFormats(t *testing.T) {
+	cases := []struct {
+		name   string
+		args   []string
+		golden string
+	}{
+		{"text", []string{"t5", "-seed", "42"}, "t5-seed42.text"},
+		{"uwp", []string{"t5", "-seed", "42", "-format", "uwp"}, "t5-seed42.uwp"},
+		{"json", []string{"t5", "-seed", "42", "-format", "json"}, "t5-seed42.json"},
+		{"batch", []string{"t5", "-seed", "7", "-n", "3", "-format", "uwp"}, "t5-seed7n3.uwp"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			code, out, errStr := runCapture(t, c.args...)
+			if code != 0 {
+				t.Fatalf("exit %d, stderr: %s", code, errStr)
+			}
+			path := filepath.Join("testdata", c.golden)
+			if *update {
+				if err := os.WriteFile(path, []byte(out), 0o644); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+			want, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read golden (run with -update to create): %v", err)
+			}
+			if out != string(want) {
+				t.Errorf("output mismatch for %s:\n got:\n%s\nwant:\n%s", c.golden, out, want)
+			}
+		})
+	}
+}
+
+func TestT5Deterministic(t *testing.T) {
+	_, a, _ := runCapture(t, "t5", "-seed", "123")
+	_, b, _ := runCapture(t, "t5", "-seed", "123")
+	if a != b {
+		t.Fatalf("same seed produced different output:\n%s\n---\n%s", a, b)
+	}
+}
+
+func TestT5JSONFields(t *testing.T) {
+	code, out, errStr := runCapture(t, "t5", "-seed", "42", "-format", "json")
+	if code != 0 {
+		t.Fatalf("exit %d, stderr: %s", code, errStr)
+	}
+	var obj map[string]any
+	if err := json.Unmarshal([]byte(out), &obj); err != nil {
+		t.Fatalf("invalid JSON: %v\n%s", err, out)
+	}
+	for _, field := range []string{"uwp", "baseCode", "pbg", "tradeCodes", "ix", "ex", "ru", "cx", "economic", "cultural"} {
+		if _, ok := obj[field]; !ok {
+			t.Errorf("JSON missing %q field", field)
+		}
+	}
+}
+
+func TestT5Errors(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"unknown flag", []string{"t5", "-nope"}},
+		{"bad format", []string{"t5", "-format", "xml"}},
+		{"bad n", []string{"t5", "-n", "0"}},
+		{"n over max", []string{"t5", "-n", "1000001"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			code, _, errStr := runCapture(t, c.args...)
+			if code != 2 {
+				t.Errorf("exit = %d, want 2", code)
+			}
+			if strings.TrimSpace(errStr) == "" {
+				t.Error("expected a message on stderr")
+			}
+		})
+	}
+}
+
+func TestT5Help(t *testing.T) {
+	code, out, errStr := runCapture(t, "t5", "-h")
+	if code != 0 {
+		t.Errorf("exit = %d, want 0", code)
+	}
+	if !strings.Contains(out, "-seed") {
+		t.Errorf("help should list the -seed flag on stdout, got: %s", out)
+	}
+	if strings.TrimSpace(errStr) != "" {
+		t.Errorf("help should not write to stderr, got: %s", errStr)
+	}
+}
+
 func TestDispatch(t *testing.T) {
 	t.Run("no args lists editions", func(t *testing.T) {
 		code, _, errStr := runCapture(t)

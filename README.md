@@ -8,9 +8,10 @@ a generated name.
 The repo is organized to hold **each edition of Traveller's world generation
 side by side**. Today that is **Classic Traveller** (_Book 3: Worlds and
 Adventures_, GDW 1977) in `classic/`, **MegaTraveller** (_Referee's Manual_,
-DGP/GDW 1987) in `megatraveller/`, and **Traveller: The New Era** (GDW 1993) in
-`tne/`; further editions (Mongoose, T5, …) are added as sibling packages sharing
-the same `dice` and `ehex` foundation.
+DGP/GDW 1987) in `megatraveller/`, **Traveller: The New Era** (GDW 1993) in
+`tne/`, and **Traveller5** (_Core Book 3_, FFE 5.10) in `t5/`; further editions
+(Mongoose, …) are added as sibling packages sharing the same `dice` and `ehex`
+foundation.
 
 MegaTraveller extends the classic profile with a referee-chosen **subsector
 nature** (which shapes the starport), a **non-imperial military base**, derived
@@ -18,6 +19,13 @@ nature** (which shapes the starport), a **non-imperial military base**, derived
 flowchart — **gas giants** and **planetoid belts**. TNE shares MegaTraveller's
 nature-driven starport and military base but has no trade or system-count layer,
 so a TNE world is a UWP plus bases.
+
+Traveller5 is the outlier: its core draw is **Flux** (`1D − 1D`, −5…+5) rather
+than the `2D − 7` of the other three, hydrographics keys off atmosphere instead
+of size, and characteristics are hard-capped. On top of the UWP, T5 generates
+Naval/Scout bases, the **PBG** counts (population digit, planetoid belts, gas
+giants), trade classifications, and the **Ix/Ex/Cx** extensions (Importance,
+Economic, Cultural).
 
 ## Usage
 
@@ -28,6 +36,7 @@ worldgen <edition> [flags]
 worldgen classic [-seed N] [-format text|uwp|json] [-n COUNT]
 worldgen mega    [-seed N] [-format text|uwp|json] [-n COUNT] [-nature NATURE]
 worldgen tne     [-seed N] [-format text|uwp|json] [-n COUNT] [-nature NATURE]
+worldgen t5      [-seed N] [-format text|uwp|json] [-n COUNT]
 ```
 
 Run `worldgen` with no arguments to list editions. Flags shared by every
@@ -95,6 +104,29 @@ Robriheil      C645856-7  SM
 Sihir          B675453-A  —
 Tifeifarn      C496333-5  S
 Liafufous      A83A336-D  N
+
+$ go run ./cmd/worldgen t5 -seed 42
+Saejiarn  X223300-3  None
+  Starport      X  None; no starport
+  Size          2  2,000 miles (3,200 km)
+  Atmosphere    2  Very Thin, Tainted
+  Hydrographics 3  30% Water
+  Population    3  Thousands (10^3)
+  Government    0  No Government Structure
+  Law Level     0  No Law. No prohibitions
+  Tech Level    3  Pre-Industrial (basic science)
+  Trade         Lo Po
+  Importance    {-3}
+  Economic      (620+1)  (RU 12)
+  Cultural      [2161]
+  Gas Giants    2
+  Belts         3
+
+$ go run ./cmd/worldgen t5 -seed 1977 -n 4 -format uwp
+Cirisould      C623468-A  -  {+0} (A33+3) [648C]  130  Ni Px Po
+Faedoth        B486899-7  S  {+1} (978+2) [A914]  821  Ph Pa Ri
+Mumeil         B221244-D  S  {+1} (B11-3) [434D]  201  Lo Po
+Niadreicoun    B898200-7  -  {-1} (310+1) [5188]  701  Lo
 ```
 
 The `uwp` base column is a compact code. Classic: `N` naval, `S` scout, `NS`
@@ -102,7 +134,8 @@ both, `—` none. MegaTraveller and TNE: `N` naval, `S` scout, `A` naval + scout
 plus a trailing `M` for a non-imperial military base. The MegaTraveller line then
 carries a gas-giant marker (`G`_n_), a planetoid-belt marker (`B`_n_), and the
 trade codes (`-` for an empty field); TNE's line ends at the base code (`—` when
-none).
+none). Traveller5 uses `N`/`S`/`A` bases (`-` when none), then the extensions
+`{Ix}` `(Ex)` `[Cx]`, the three-digit **PBG**, and the trade codes.
 
 ## Layout
 
@@ -120,13 +153,15 @@ Per-edition rules (each self-contained, sharing `dice` and `ehex`):
   gas giants, and planetoid belts.
 - `tne/` — Traveller: The New Era: MegaTraveller's UWP generation (nature-driven
   starport, military base) minus the trade and gas-giant layers.
-- _future_ — `mongoose/`, `t5/`, … as sibling packages.
+- `t5/` — Traveller5 Core Book 3: the Flux-based UWP, Naval/Scout bases, PBG
+  counts, trade classifications, and the Ix/Ex/Cx extensions.
+- _future_ — `mongoose/`, … as sibling packages.
 
 CLI and docs:
 
 - `cmd/worldgen/` — the CLI. `main.go` dispatches on an edition subcommand;
   each edition has its own runner file (`classic.go`, `megatraveller.go`,
-  `tne.go`) registered in the `editions` map.
+  `tne.go`, `t5.go`) registered in the `editions` map.
 - `docs/<edition>/` — the source PDF(s) and the verified rules extract.
 
 **Adding an edition** means: a new rules package (e.g. `mongoose/`), a
@@ -213,3 +248,28 @@ Government E/F `−1`, and TNE has **no trade-classification or gas-giant step**
 **Deferred.** TNE's Planetary-Density → surface-gravity step (part of world size)
 and the WTH detail layer (temperature, atmospheric composition, world mass) are
 physical data beyond the UWP, out of scope.
+
+### Traveller5 (Core Book 3)
+
+**A different engine.** T5's core draw is **Flux** (`1D − 1D`, −5…+5), not
+`2D − 7`. Atmosphere is `Flux + Size`, hydrographics is `Flux + Atmosphere`
+(keyed off atmosphere, not size), government/law are Flux-based, and every
+characteristic is hard-capped (Size/Atm/Gov `0–F`, Law `0–J`, Hyd `0–A`) — so
+nothing is ever "beyond described range." The starport table is a single 2D
+column identical to Classic; bases roll `2D ≤ target` (T5's `N−` notation), the
+mirror of Classic's `≥`.
+
+**Extensions.** Beyond the UWP, T5 generates the **Ix** (Importance,
+`{±n}`), **Ex** (Economic, `(RLI±E)` with derived Resource Units), and **Cx**
+(Cultural, `[HASS]`) extensions, plus the **PBG** counts and trade
+classifications.
+
+**Source note.** Core Book 3 p. 25 gives the tech-level DM formula but no prose
+TL table, so the era-band descriptions reuse the edition-invariant Traveller TL
+bands. Book 3 states no As→Va suppression rule, so an asteroid belt carries both.
+
+**Deferred.** MainWorld-type (planet vs. satellite), Habitable-Zone/Climate and
+the climate trade codes that depend on it, the Secondary/Political/Special trade
+codes (referee-assigned), Nobility/Allegiance/Travel-Zone/Native-Intelligent-Life
+(the rest of NABZ-NIL), Depot/Way-Station bases, and the whole system map are out
+of scope for a bare mainworld generator.
