@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Draejapu",
+    "uwp": "X200346-2",
+    "starport": "X",
+    "size": 2,
+    "atmosphere": 0,
+    "hydrographics": 0,
+    "population": 3,
+    "government": 4,
+    "lawLevel": 6,
+    "techLevel": 2,
+    "navalBase": false,
+    "scoutBase": false
+  },
+  {
+    "name": "Fupi",
+    "uwp": "C541A87-B",
+    "starport": "C",
+    "size": 5,
+    "atmosphere": 4,
+    "hydrographics": 1,
+    "population": 10,
+    "government": 8,
+    "lawLevel": 7,
+    "techLevel": 11,
+    "navalBase": false,
+    "scoutBase": false
+  }
+]

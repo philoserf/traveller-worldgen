@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -18,9 +19,10 @@ import (
 	"github.com/philoserf/traveller-worldgen/dice"
 )
 
-// maxWorlds bounds the -n flag so an accidental huge value can't allocate an
-// unbounded slice (worlds are materialized up front). A full sector is 640 hexes,
-// so this is generous headroom for any realistic batch.
+// maxWorlds bounds the -n flag so an accidental huge value can't spin the CLI
+// indefinitely. Worlds stream out one at a time (see streamWorlds), so a large
+// batch no longer buffers in memory; the cap only limits total work. A full
+// sector is 640 hexes, so this is generous headroom for any realistic batch.
 const maxWorlds = 1_000_000
 
 // editions maps a subcommand name to its runner. Adding an edition is one entry
@@ -70,45 +72,76 @@ func errf(w io.Writer, format string, a ...any) {
 	_, _ = fmt.Fprintf(w, format, a...)
 }
 
-// renderWorldsJSON marshals one world as an object, or several as an array, with
-// two-space indentation and a trailing newline. Shared by every edition's runner
-// so the JSON shape stays identical across editions.
-func renderWorldsJSON[T any](worlds []T) (string, error) {
-	var v any = worlds
-	if len(worlds) == 1 {
-		v = worlds[0]
-	}
-	data, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("encoding json: %w", err)
-	}
-	return string(data) + "\n", nil
-}
-
-// renderWorlds turns the generated worlds into the requested output format,
-// using the edition's per-world formatters for the uwp and text layouts. The
-// json shape comes from each World's MarshalJSON via the shared renderWorldsJSON.
-func renderWorlds[T any](format string, worlds []T, uwpLine, textBlock func(T) string) (string, error) {
+// streamWorlds generates the n worlds one at a time and writes each to w in the
+// requested format. Generating and writing per world keeps memory flat in n
+// instead of materializing the whole batch and its rendered output up front — a
+// large -n would otherwise buffer gigabytes. It routes through a bufio.Writer
+// whose final Flush surfaces any write error; bufio records write errors stickily,
+// so the intermediate writes deliberately ignore their returns. Per-world layout
+// comes from the edition's uwp/text formatters; the json shape comes from each
+// World's MarshalJSON.
+func streamWorlds[T any](
+	w io.Writer, format string, n int,
+	roller dice.Roller, generate func(dice.Roller) T,
+	uwpLine, textBlock func(T) string,
+) error {
+	bw := bufio.NewWriter(w)
 	switch format {
 	case "json":
-		return renderWorldsJSON(worlds)
+		if err := streamWorldsJSON(bw, n, roller, generate); err != nil {
+			return err
+		}
 	case "uwp":
-		var b strings.Builder
-		for _, w := range worlds {
-			b.WriteString(uwpLine(w))
-			b.WriteByte('\n')
+		for range n {
+			_, _ = bw.WriteString(uwpLine(generate(roller)))
+			_ = bw.WriteByte('\n')
 		}
-		return b.String(), nil
 	default: // text
-		var b strings.Builder
-		for i, w := range worlds {
+		for i := range n {
 			if i > 0 {
-				b.WriteByte('\n')
+				_ = bw.WriteByte('\n')
 			}
-			b.WriteString(textBlock(w))
+			_, _ = bw.WriteString(textBlock(generate(roller)))
 		}
-		return b.String(), nil
 	}
+	if err := bw.Flush(); err != nil {
+		return fmt.Errorf("writing output: %w", err)
+	}
+	return nil
+}
+
+// streamWorldsJSON writes the worlds as JSON: a single object when n == 1, else an
+// array. Unwrapping the lone n == 1 world to a bare object is a deliberate
+// ergonomic choice for the common single-world invocation (consumers of a batch
+// already handle the array); do not "fix" it into an always-array. The array
+// framing is written by hand so each world is marshaled on its own, but the bytes
+// match json.MarshalIndent over the whole slice (two-space indent, trailing
+// newline) — an array element sits at indent depth 1, which MarshalIndent with
+// prefix "  " reproduces.
+func streamWorldsJSON[T any](bw *bufio.Writer, n int, roller dice.Roller, generate func(dice.Roller) T) error {
+	if n == 1 {
+		data, err := json.MarshalIndent(generate(roller), "", "  ")
+		if err != nil {
+			return fmt.Errorf("encoding json: %w", err)
+		}
+		_, _ = bw.Write(data)
+		_ = bw.WriteByte('\n')
+		return nil
+	}
+	_, _ = bw.WriteString("[\n")
+	for i := range n {
+		if i > 0 {
+			_, _ = bw.WriteString(",\n")
+		}
+		data, err := json.MarshalIndent(generate(roller), "  ", "  ")
+		if err != nil {
+			return fmt.Errorf("encoding json: %w", err)
+		}
+		_, _ = bw.WriteString("  ")
+		_, _ = bw.Write(data)
+	}
+	_, _ = bw.WriteString("\n]\n")
+	return nil
 }
 
 // runEdition runs one edition's CLI. It owns the flags every edition shares
@@ -171,20 +204,12 @@ func runEdition[T any](
 		*seed = time.Now().UnixNano()
 	}
 
-	// One roller drives all N worlds, so a seed reproduces the whole batch.
+	// One roller drives all N worlds, so a seed reproduces the whole batch. Worlds
+	// are generated and written one at a time, so a large -n streams to stdout in
+	// flat memory rather than buffering the batch and its rendered output.
 	roller := dice.NewSeeded(*seed)
-	worlds := make([]T, *n)
-	for i := range worlds {
-		worlds[i] = generate(roller)
-	}
-
-	out, err := renderWorlds(*format, worlds, uwpLine, textBlock)
-	if err != nil {
+	if err := streamWorlds(stdout, *format, *n, roller, generate, uwpLine, textBlock); err != nil {
 		errf(stderr, "worldgen: %v\n", err)
-		return 1
-	}
-	if _, err := io.WriteString(stdout, out); err != nil {
-		errf(stderr, "worldgen: writing output: %v\n", err)
 		return 1
 	}
 	return 0

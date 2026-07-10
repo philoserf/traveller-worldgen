@@ -33,16 +33,22 @@ A CLI that rolls single Traveller worlds. The organizing principle is **one Go
 package per Traveller edition, sitting side by side on a shared foundation** —
 so understanding any single edition means understanding this shared shape.
 
-- `dice/` and `ehex/` are **edition-independent** and reused verbatim by every
-  edition. `dice.Roller` is the seam through which all randomness flows;
-  `ehex` is Traveller extended-hex (0-9, A-Z minus I/O).
+- `dice/`, `ehex/`, and `worldname/` are **edition-independent** and reused
+  verbatim by every edition. `dice.Roller` is the seam through which all
+  randomness flows; `ehex` is Traveller extended-hex (0-9, A-Z minus I/O);
+  `worldname.Generate` rolls a pronounceable name from the same roller (it
+  touches no edition's rules, so it lives here, not per-package).
 - `classic/` and `megatraveller/` are **self-contained rules packages** — each
   has its own `world.go` (the `World` struct, `UWP()`, `*Desc()` methods,
-  `MarshalJSON`), `generate.go` (`Generate`), `tables.go` (all lookup maps +
-  tech-DM matrices), and `names.go`. Duplication between editions is
-  **deliberate**: they evolve independently, so `names.go` and the small
-  `floor0`/`clamp`/generic-`lookup` helpers are copied per package rather than
-  shared. Do not "DRY up" the rules packages into a common one.
+  `MarshalJSON`), `generate.go` (`Generate`), and `tables.go` (all lookup maps +
+  tech-DM matrices). Duplication of the **rules** between editions is
+  **deliberate**: they evolve independently, so the small `floor0`/`clamp`/
+  generic-`lookup` helpers are copied per package rather than shared. Do not
+  "DRY up" the rules — `tables.go`, `generate.go`, `trade.go` — into a common
+  package, even where two editions' tables happen to be identical today (an
+  errata to one must not touch the other). This applies only to rules;
+  genuinely edition-independent mechanism (see `worldname/`) belongs in a
+  shared package.
 - `cmd/worldgen/` is the CLI. `main.go` dispatches on the first arg via the
   `editions` map; each edition has one runner file (`classic.go`,
   `megatraveller.go`). **Rendering lives in the CLI, not the packages** — the

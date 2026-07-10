@@ -28,6 +28,7 @@ func TestClassicGoldenFormats(t *testing.T) {
 		{"text", []string{"classic", "-seed", "42"}, "seed42.text"},
 		{"uwp", []string{"classic", "-seed", "42", "-format", "uwp"}, "seed42.uwp"},
 		{"json", []string{"classic", "-seed", "42", "-format", "json"}, "seed42.json"},
+		{"json-array", []string{"classic", "-seed", "42", "-n", "2", "-format", "json"}, "seed42n2.json"},
 		{"batch", []string{"classic", "-seed", "7", "-n", "3", "-format", "uwp"}, "seed7n3.uwp"},
 	}
 	for _, c := range cases {
