@@ -18,6 +18,11 @@ import (
 	"github.com/philoserf/traveller-worldgen/dice"
 )
 
+// maxWorlds bounds the -n flag so an accidental huge value can't allocate an
+// unbounded slice (worlds are materialized up front). A full sector is 640 hexes,
+// so this is generous headroom for any realistic batch.
+const maxWorlds = 1_000_000
+
 // editions maps a subcommand name to its runner. Adding an edition is one entry
 // here plus its runner file (e.g. classic.go).
 var editions = map[string]func(args []string, stdout, stderr io.Writer) int{
@@ -138,19 +143,19 @@ func runEdition[T any](
 		errf(stderr, "worldgen %s: %v\n", name, err)
 		return 2
 	}
-	if *n < 1 {
-		errf(stderr, "worldgen: -n must be >= 1, got %d\n", *n)
+	if *n < 1 || *n > maxWorlds {
+		errf(stderr, "worldgen %s: -n must be between 1 and %d, got %d\n", name, maxWorlds, *n)
 		return 2
 	}
 	switch *format {
 	case "text", "uwp", "json":
 	default:
-		errf(stderr, "worldgen: unknown -format %q (want text, uwp, or json)\n", *format)
+		errf(stderr, "worldgen %s: unknown -format %q (want text, uwp, or json)\n", name, *format)
 		return 2
 	}
 	generate, err := validate()
 	if err != nil {
-		errf(stderr, "worldgen: %v\n", err)
+		errf(stderr, "worldgen %s: %v\n", name, err)
 		return 2
 	}
 
