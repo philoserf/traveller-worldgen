@@ -150,12 +150,12 @@ func runEdition[T any](
 	switch *format {
 	case "text", "uwp", "json":
 	default:
-		errf(stderr, "worldgen: unknown -format %q (want text, uwp, or json)\n", *format)
+		errf(stderr, "worldgen %s: unknown -format %q (want text, uwp, or json)\n", name, *format)
 		return 2
 	}
 	generate, err := validate()
 	if err != nil {
-		errf(stderr, "worldgen: %v\n", err)
+		errf(stderr, "worldgen %s: %v\n", name, err)
 		return 2
 	}
 

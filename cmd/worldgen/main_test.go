@@ -123,6 +123,7 @@ func TestMegaErrors(t *testing.T) {
 		{"bad format", []string{"mega", "-format", "xml"}},
 		{"bad nature", []string{"mega", "-nature", "bogus"}},
 		{"bad n", []string{"mega", "-n", "0"}},
+		{"n over max", []string{"mega", "-n", "1000001"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -219,6 +220,7 @@ func TestTneErrors(t *testing.T) {
 		{"bad format", []string{"tne", "-format", "xml"}},
 		{"bad nature", []string{"tne", "-nature", "bogus"}},
 		{"bad n", []string{"tne", "-n", "0"}},
+		{"n over max", []string{"tne", "-n", "1000001"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -290,6 +292,7 @@ func TestClassicErrors(t *testing.T) {
 		{"unknown flag", []string{"classic", "-nope"}},
 		{"bad format", []string{"classic", "-format", "xml"}},
 		{"bad n", []string{"classic", "-n", "0"}},
+		{"n over max", []string{"classic", "-n", "1000001"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
