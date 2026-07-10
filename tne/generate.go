@@ -83,7 +83,7 @@ func rollStarport(r dice.Roller, nature Nature) byte {
 	if !ok {
 		col = starportByNature[Standard]
 	}
-	return col[r.D6(2)-2]
+	return col[clamp(r.D6(2)-2, 0, len(col)-1)]
 }
 
 // rollBase rolls 2D against a base's per-starport target. A zero target means
