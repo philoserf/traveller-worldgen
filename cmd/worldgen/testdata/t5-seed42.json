@@ -1,0 +1,40 @@
+{
+  "name": "Saejiarn",
+  "uwp": "X223300-3",
+  "starport": "X",
+  "size": 2,
+  "atmosphere": 2,
+  "hydrographics": 3,
+  "population": 3,
+  "government": 0,
+  "lawLevel": 0,
+  "techLevel": 3,
+  "navalBase": false,
+  "scoutBase": false,
+  "baseCode": "",
+  "populationDigit": 3,
+  "planetoidBelts": 3,
+  "gasGiants": 2,
+  "pbg": "332",
+  "tradeCodes": [
+    "Lo",
+    "Po"
+  ],
+  "importance": -3,
+  "ix": "{-3}",
+  "economic": {
+    "resources": 6,
+    "labor": 2,
+    "infrastructure": 0,
+    "efficiency": 1
+  },
+  "ex": "(620+1)",
+  "ru": 12,
+  "cultural": {
+    "heterogeneity": 2,
+    "acceptance": 1,
+    "strangeness": 6,
+    "symbols": 1
+  },
+  "cx": "[2161]"
+}

@@ -29,6 +29,7 @@ var editions = map[string]func(args []string, stdout, stderr io.Writer) int{
 	"classic": runClassic,
 	"mega":    runMega,
 	"tne":     runTne,
+	"t5":      runT5,
 }
 
 func main() {
