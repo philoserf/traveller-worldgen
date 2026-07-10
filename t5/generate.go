@@ -1,6 +1,9 @@
 package t5
 
-import "github.com/philoserf/traveller-worldgen/dice"
+import (
+	"github.com/philoserf/traveller-worldgen/dice"
+	"github.com/philoserf/traveller-worldgen/worldname"
+)
 
 // Generate rolls a single T5 mainworld from r. Draws happen in a fixed,
 // documented order so a given seed always reproduces the same world; a
@@ -30,7 +33,7 @@ func Generate(r dice.Roller) World {
 	w.Importance = importance(w)
 	w.Economic = rollEconomic(r, w)
 	w.Cultural = rollCultural(r, w)
-	w.Name = generateName(r)
+	w.Name = worldname.Generate(r)
 	return w
 }
 

@@ -1,4 +1,9 @@
-package megatraveller
+// Package worldname generates pronounceable world names from a dice.Roller. Name
+// generation is edition-independent — it touches no edition's rules or tables —
+// so, like dice and ehex, it lives in its own shared package and every edition
+// draws from it. Because it consumes dice from the same Roller, a seed reproduces
+// an edition's whole world (UWP and name) as one deterministic stream.
+package worldname
 
 import (
 	"strings"
@@ -7,26 +12,24 @@ import (
 )
 
 // Name-fragment tables. Lengths are chosen to divide 36 evenly (the range of two
-// independent d6 via choose), so selection is unbiased. This is the same
-// pronounceable-name generator the classic package uses; each edition keeps its
-// own copy so the packages stay independent.
+// independent d6 via choose), so selection is unbiased.
 var (
-	nameOnsets = []string{ // 18 entries
+	onsets = []string{ // 18 entries
 		"b", "c", "d", "f", "g", "h", "j", "k", "l",
 		"m", "n", "p", "r", "s", "t", "v", "br", "dr",
 	}
-	nameVowels = []string{ // 9 entries
+	vowels = []string{ // 9 entries
 		"a", "e", "i", "o", "u", "ae", "ia", "ou", "ei",
 	}
-	nameCodas = []string{ // 12 entries
+	codas = []string{ // 12 entries
 		"n", "r", "s", "l", "m", "x", "th", "rn", "ss", "ld", "k", "ne",
 	}
 )
 
-// generateName builds a pronounceable name from r: two or three consonant-vowel
+// Generate builds a pronounceable name from r: two or three consonant-vowel
 // syllables, with an optional coda on the last one. Deterministic in the roller's
 // stream.
-func generateName(r dice.Roller) string {
+func Generate(r dice.Roller) string {
 	syllables := 2
 	if r.D6(1) >= 4 {
 		syllables = 3
@@ -34,10 +37,10 @@ func generateName(r dice.Roller) string {
 
 	var b strings.Builder
 	for i := range syllables {
-		b.WriteString(choose(r, nameOnsets))
-		b.WriteString(choose(r, nameVowels))
+		b.WriteString(choose(r, onsets))
+		b.WriteString(choose(r, vowels))
 		if i == syllables-1 && r.D6(1) >= 3 {
-			b.WriteString(choose(r, nameCodas))
+			b.WriteString(choose(r, codas))
 		}
 	}
 

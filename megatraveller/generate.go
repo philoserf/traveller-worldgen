@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/philoserf/traveller-worldgen/dice"
+	"github.com/philoserf/traveller-worldgen/worldname"
 )
 
 // Nature is the referee-chosen character of a subsector, which selects the
@@ -77,7 +78,7 @@ func Generate(r dice.Roller, nature Nature) World {
 	w.TechLevel = rollTech(r, w)
 	w.GasGiants = rollGasGiants(r)
 	w.PlanetoidBelts = rollPlanetoidBelts(r)
-	w.Name = generateName(r)
+	w.Name = worldname.Generate(r)
 	return w
 }
 

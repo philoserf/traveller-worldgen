@@ -1,6 +1,9 @@
 package classic
 
-import "github.com/philoserf/traveller-worldgen/dice"
+import (
+	"github.com/philoserf/traveller-worldgen/dice"
+	"github.com/philoserf/traveller-worldgen/worldname"
+)
 
 // Generate rolls a single world from r. Draws happen in a fixed order —
 // starport, naval base, scout base, size, atmosphere, hydrographics,
@@ -19,7 +22,7 @@ func Generate(r dice.Roller) World {
 	w.Government = floor0(r.D6(2) - 7 + w.Population)
 	w.LawLevel = floor0(r.D6(2) - 7 + w.Government)
 	w.TechLevel = rollTech(r, w)
-	w.Name = generateName(r)
+	w.Name = worldname.Generate(r)
 	return w
 }
 
